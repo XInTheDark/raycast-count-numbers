@@ -39,7 +39,7 @@ function renderText(text) {
 }
 
 const defaultData = {
-  counters: [{ id: 0, name: "Counter", count: 0, increment: 1, modulo: 0 }],
+  counters: [{ id: 0, name: "Counter", count: 0, increment: 1, modulo: 1 }],
   currentCounter: 0,
 };
 
@@ -162,7 +162,7 @@ export default function Command() {
         <Form.TextField id="name" title="Name" defaultValue="Counter" />
         <Form.TextField id="count" title="Count" defaultValue={"0"} />
         <Form.TextField id="increment" title="Increment" defaultValue={"1"} />
-        <Form.TextField id="modulo" title="Modulo" defaultValue={"0"} />
+        <Form.TextField id="modulo" title="Modulo" defaultValue={"1"} />
       </Form>
     );
   };
@@ -172,7 +172,7 @@ export default function Command() {
       let newData = structuredClone(data);
       let counter = getCounter(newData);
       counter.count += counter.increment;
-      if (counter.modulo > 0) {
+      if (counter.modulo > 1) {
         counter.count %= counter.modulo;
       }
       return newData;
