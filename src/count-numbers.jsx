@@ -22,14 +22,8 @@ function getImage(text) {
     return `"data:image/svg+xml,${encodeURIComponent(renderToString(img))}"`;
 }
 
-function renderText(text, prefetchedData) {
-  let image;
-  if (prefetchedData && prefetchedData[text]) {
-    image = prefetchedData[text];
-  }
-  else {
-    image = getImage(text);
-  }
+function renderText(text) {
+  let image = getImage(text);
   return `<img height="300" width="700" src=${image} />`;
 }
 
@@ -63,11 +57,8 @@ async function writeData(data, key = "data") {
   await LocalStorage.setItem(key, JSON.stringify(data));
 }
 
-const defaultPrefetchedData = {};
-
 export default function Command() {
   let [data, setData] = useState(null);
-  let [prefetchedData, setPrefetchedData] = useState(null);
 
   const Settings = () => {
     const { pop } = useNavigation();
@@ -100,9 +91,9 @@ export default function Command() {
   const SwitchCounters = () => {
     const { pop } = useNavigation();
     const dropdown = (
-      <Form.Dropdown id="counter" title="Counter" defaultValue={data.currentCounter}>
+      <Form.Dropdown id="counter" title="Counter" defaultValue={data.currentCounter.toString()}>
         {data.counters.map((c) => (
-          <Form.Dropdown.Item key={c.id} value={c.id} title={c.name} />
+          <Form.Dropdown.Item key={c.id} value={c.id.toString()} title={c.name} />
         ))}
       </Form.Dropdown>
     );
@@ -113,7 +104,7 @@ export default function Command() {
             <Action.SubmitForm title="Switch" onSubmit={(values) => {
               setData((data) => {
                 let newData = structuredClone(data);
-                newData.currentCounter = values.counter;
+                newData.currentCounter = parseInt(values.counter);
                 return newData;
               });
               pop();
@@ -157,24 +148,6 @@ export default function Command() {
     );
   }
 
-  function prefetch() {
-    const counter = getCounter(data);
-    let count = counter.count;
-    const increment = counter.increment;
-
-    // prefetch the image for the next 10 counts
-    setPrefetchedData((data) => {
-      let newData = structuredClone(data);
-      for (let i = 1; i <= 10; i++) {
-        count += increment;
-        if (!newData[count]) {
-          newData[count] = getImage(count);
-        }
-      }
-      return newData;
-    });
-  }
-
   function incrementCount() {
     setData((data) => {
       let newData = structuredClone(data);
@@ -185,8 +158,6 @@ export default function Command() {
       }
       return newData;
     });
-
-    prefetch();
   }
 
   function resetCounter() {
@@ -201,8 +172,6 @@ export default function Command() {
   useEffect(() => {
     (async () => {
       setData(await getData());
-      await writeData(defaultPrefetchedData, "prefetchedData");
-      setPrefetchedData(defaultPrefetchedData);
     })();
   }, []);
 
@@ -214,15 +183,7 @@ export default function Command() {
     })();
   }, [data]);
 
-  useEffect(() => {
-    (async () => {
-      if (prefetchedData) {
-        await writeData(prefetchedData, "prefetchedData");
-      }
-    })();
-  }, [prefetchedData]);
-
-  return <Detail markdown={renderText(getCount(data), prefetchedData)}
+  return <Detail markdown={renderText(getCount(data))}
                  actions={
                     <ActionPanel>
                       <Action
