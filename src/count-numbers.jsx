@@ -8,7 +8,7 @@ import {
   LocalStorage,
   showToast,
   Toast,
-  useNavigation
+  useNavigation,
 } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { renderToString } from "react-dom/server";
@@ -16,21 +16,21 @@ import { renderToString } from "react-dom/server";
 function getImage(text) {
   text = text.toString();
   const img = (
-      <svg viewBox={`0 0 300 700`} xmlns="http://www.w3.org/2000/svg">
-        <text
-          x="50%"
-          y="50%"
-          fill={environment.theme === "dark" ? "#fff" : "#000"}
-          fontSize="200"
-          fontFamily="-apple-system"
-          textLength="700"
-          lengthAdjust="spacing"
-        >
-          {text}
-        </text>
-      </svg>
-    );
-    return `"data:image/svg+xml,${encodeURIComponent(renderToString(img))}"`;
+    <svg viewBox={`0 0 300 700`} xmlns="http://www.w3.org/2000/svg">
+      <text
+        x="50%"
+        y="50%"
+        fill={environment.theme === "dark" ? "#fff" : "#000"}
+        fontSize="200"
+        fontFamily="-apple-system"
+        textLength="700"
+        lengthAdjust="spacing"
+      >
+        {text}
+      </text>
+    </svg>
+  );
+  return `"data:image/svg+xml,${encodeURIComponent(renderToString(img))}"`;
 }
 
 function renderText(text) {
@@ -39,9 +39,7 @@ function renderText(text) {
 }
 
 const defaultData = {
-  counters: [
-    { id: 0, name: "Counter", count: 0, increment: 1, modulo: 0 },
-  ],
+  counters: [{ id: 0, name: "Counter", count: 0, increment: 1, modulo: 0 }],
   currentCounter: 0,
 };
 
@@ -57,8 +55,7 @@ function getCount(data) {
 async function getData(key = "data", defaultValue = defaultData) {
   try {
     return JSON.parse(await LocalStorage.getItem(key));
-  }
-  catch {
+  } catch {
     await writeData(defaultValue, key);
     return defaultValue;
   }
@@ -78,17 +75,20 @@ export default function Command() {
       <Form
         actions={
           <ActionPanel>
-            <Action.SubmitForm title="Save" onSubmit={(values) => {
-              setData((data) => {
-                let newData = structuredClone(data);
-                let counter = getCounter(newData);
-                counter.count = parseInt(values.count);
-                counter.increment = parseInt(values.increment);
-                counter.modulo = parseInt(values.modulo);
-                return newData;
-              });
-              pop();
-            }} />
+            <Action.SubmitForm
+              title="Save"
+              onSubmit={(values) => {
+                setData((data) => {
+                  let newData = structuredClone(data);
+                  let counter = getCounter(newData);
+                  counter.count = parseInt(values.count);
+                  counter.increment = parseInt(values.increment);
+                  counter.modulo = parseInt(values.modulo);
+                  return newData;
+                });
+                pop();
+              }}
+            />
           </ActionPanel>
         }
       >
@@ -112,21 +112,24 @@ export default function Command() {
       <Form
         actions={
           <ActionPanel>
-            <Action.SubmitForm title="Switch" onSubmit={(values) => {
-              setData((data) => {
-                let newData = structuredClone(data);
-                newData.currentCounter = parseInt(values.counter);
-                return newData;
-              });
-              pop();
-            }} />
+            <Action.SubmitForm
+              title="Switch"
+              onSubmit={(values) => {
+                setData((data) => {
+                  let newData = structuredClone(data);
+                  newData.currentCounter = parseInt(values.counter);
+                  return newData;
+                });
+                pop();
+              }}
+            />
           </ActionPanel>
         }
       >
         {dropdown}
       </Form>
     );
-  }
+  };
 
   const CreateCounter = () => {
     const { pop } = useNavigation();
@@ -134,22 +137,25 @@ export default function Command() {
       <Form
         actions={
           <ActionPanel>
-            <Action.SubmitForm title="Create" onSubmit={(values) => {
-              setData((data) => {
-                let newData = structuredClone(data);
-                const id = Math.max(...newData.counters.map((c) => c.id)) + 1;
-                newData.counters.push({
-                  id: id,
-                  name: values.name,
-                  count: parseInt(values.count),
-                  increment: parseInt(values.increment),
-                  modulo: parseInt(values.modulo),
+            <Action.SubmitForm
+              title="Create"
+              onSubmit={(values) => {
+                setData((data) => {
+                  let newData = structuredClone(data);
+                  const id = Math.max(...newData.counters.map((c) => c.id)) + 1;
+                  newData.counters.push({
+                    id: id,
+                    name: values.name,
+                    count: parseInt(values.count),
+                    increment: parseInt(values.increment),
+                    modulo: parseInt(values.modulo),
+                  });
+                  newData.currentCounter = id;
+                  return newData;
                 });
-                newData.currentCounter = id;
-                return newData;
-              });
-              pop();
-            }} />
+                pop();
+              }}
+            />
           </ActionPanel>
         }
       >
@@ -159,7 +165,7 @@ export default function Command() {
         <Form.TextField id="modulo" title="Modulo" defaultValue={"0"} />
       </Form>
     );
-  }
+  };
 
   function incrementCount() {
     setData((data) => {
@@ -174,29 +180,29 @@ export default function Command() {
   }
 
   function resetCounter() {
-  setData((data) => {
-    let newData = structuredClone(data);
-    let counter = getCounter(newData);
-    counter.count = 0;
-    return newData;
-  });
-}
-
-function deleteCounter() {
-  if (data.counters.length === 1) {
-    showToast(Toast.Style.Failure, "Cannot delete the only counter");
-    return;
+    setData((data) => {
+      let newData = structuredClone(data);
+      let counter = getCounter(newData);
+      counter.count = 0;
+      return newData;
+    });
   }
-  setData((data) => {
-    let newData = structuredClone(data);
-    const id = newData.currentCounter;
-    const idx = newData.counters.findIndex((c) => c.id === id);
-    newData.counters.splice(idx, 1);
-    const newIdx = Math.min(idx, newData.counters.length - 1);
-    newData.currentCounter = newData.counters[newIdx].id;
-    return newData;
-  });
-}
+
+  function deleteCounter() {
+    if (data.counters.length === 1) {
+      showToast(Toast.Style.Failure, "Cannot delete the only counter");
+      return;
+    }
+    setData((data) => {
+      let newData = structuredClone(data);
+      const id = newData.currentCounter;
+      const idx = newData.counters.findIndex((c) => c.id === id);
+      newData.counters.splice(idx, 1);
+      const newIdx = Math.min(idx, newData.counters.length - 1);
+      newData.currentCounter = newData.counters[newIdx].id;
+      return newData;
+    });
+  }
 
   useEffect(() => {
     (async () => {
@@ -212,45 +218,40 @@ function deleteCounter() {
     })();
   }, [data]);
 
-  return <Detail markdown={renderText(getCount(data))}
-                 actions={
-                    <ActionPanel>
-                      <Action
-                        icon={Icon.PlusCircle}
-                        title="Count"
-                        onAction={() => incrementCount()}
-                      />
-                      <Action.Push
-                        icon={Icon.Gear}
-                        title="Settings"
-                        target={<Settings />}
-                      />
-                      <Action
-                        icon={Icon.ArrowClockwise}
-                        title="Reset Counter"
-                        style={Action.Style.Destructive}
-                        onAction={() => resetCounter()}
-                      />
-                      <Action.Push
-                        icon={Icon.Switch}
-                        title="Switch Counter"
-                        target={<SwitchCounters />}
-                        shortcut={{ modifiers: ["cmd"], key: "s" }}
-                      />
-                      <Action.Push
-                        icon={Icon.PlusTopRightSquare}
-                        title="Create Counter"
-                        target={<CreateCounter />}
-                        shortcut={{ modifiers: ["cmd"], key: "n" }}
-                      />
-                      <Action
-                        icon={Icon.Trash}
-                        title="Delete Counter"
-                        style={Action.Style.Destructive}
-                        onAction={() => deleteCounter()}
-                        shortcut={{ modifiers: ["cmd", "shift"], key: "delete" }}
-                      />
-                    </ActionPanel>
-                 }
-  />;
+  return (
+    <Detail
+      markdown={renderText(getCount(data))}
+      actions={
+        <ActionPanel>
+          <Action icon={Icon.PlusCircle} title="Count" onAction={() => incrementCount()} />
+          <Action.Push icon={Icon.Gear} title="Settings" target={<Settings />} />
+          <Action
+            icon={Icon.ArrowClockwise}
+            title="Reset Counter"
+            style={Action.Style.Destructive}
+            onAction={() => resetCounter()}
+          />
+          <Action.Push
+            icon={Icon.Switch}
+            title="Switch Counter"
+            target={<SwitchCounters />}
+            shortcut={{ modifiers: ["cmd"], key: "s" }}
+          />
+          <Action.Push
+            icon={Icon.PlusTopRightSquare}
+            title="Create Counter"
+            target={<CreateCounter />}
+            shortcut={{ modifiers: ["cmd"], key: "n" }}
+          />
+          <Action
+            icon={Icon.Trash}
+            title="Delete Counter"
+            style={Action.Style.Destructive}
+            onAction={() => deleteCounter()}
+            shortcut={{ modifiers: ["cmd", "shift"], key: "delete" }}
+          />
+        </ActionPanel>
+      }
+    />
+  );
 }
