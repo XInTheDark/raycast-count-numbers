@@ -1,5 +1,16 @@
-import { Action, ActionPanel, Detail, environment, Form, Icon, LocalStorage, useNavigation } from "@raycast/api";
-import { useState, useEffect } from "react";
+import {
+  Action,
+  ActionPanel,
+  Detail,
+  environment,
+  Form,
+  Icon,
+  LocalStorage,
+  showToast,
+  Toast,
+  useNavigation
+} from "@raycast/api";
+import { useEffect, useState } from "react";
 import { renderToString } from "react-dom/server";
 
 function getImage(text) {
@@ -126,13 +137,15 @@ export default function Command() {
             <Action.SubmitForm title="Create" onSubmit={(values) => {
               setData((data) => {
                 let newData = structuredClone(data);
+                const id = Math.max(...newData.counters.map((c) => c.id)) + 1;
                 newData.counters.push({
-                  id: newData.counters.length,
+                  id: id,
                   name: values.name,
                   count: parseInt(values.count),
                   increment: parseInt(values.increment),
                   modulo: parseInt(values.modulo),
                 });
+                newData.currentCounter = id;
                 return newData;
               });
               pop();
@@ -165,6 +178,22 @@ export default function Command() {
     let newData = structuredClone(data);
     let counter = getCounter(newData);
     counter.count = 0;
+    return newData;
+  });
+}
+
+function deleteCounter() {
+  if (data.counters.length === 1) {
+    showToast(Toast.Style.Failure, "Cannot delete the only counter");
+    return;
+  }
+  setData((data) => {
+    let newData = structuredClone(data);
+    const id = newData.currentCounter;
+    const idx = newData.counters.findIndex((c) => c.id === id);
+    newData.counters.splice(idx, 1);
+    const newIdx = Math.min(idx, newData.counters.length - 1);
+    newData.currentCounter = newData.counters[newIdx].id;
     return newData;
   });
 }
@@ -206,11 +235,20 @@ export default function Command() {
                         icon={Icon.Switch}
                         title="Switch Counter"
                         target={<SwitchCounters />}
+                        shortcut={{ modifiers: ["cmd"], key: "s" }}
                       />
                       <Action.Push
                         icon={Icon.PlusTopRightSquare}
                         title="Create Counter"
                         target={<CreateCounter />}
+                        shortcut={{ modifiers: ["cmd"], key: "n" }}
+                      />
+                      <Action
+                        icon={Icon.Trash}
+                        title="Delete Counter"
+                        style={Action.Style.Destructive}
+                        onAction={() => deleteCounter()}
+                        shortcut={{ modifiers: ["cmd", "shift"], key: "delete" }}
                       />
                     </ActionPanel>
                  }
