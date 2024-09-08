@@ -99,7 +99,7 @@ export default function Command() {
     );
   };
 
-  const SwitchCounters = () => {
+  const SwitchCounter = () => {
     const { pop } = useNavigation();
     const dropdown = (
       <Form.Dropdown id="counter" title="Counter" defaultValue={data.currentCounter.toString()}>
@@ -234,7 +234,7 @@ export default function Command() {
           <Action.Push
             icon={Icon.Switch}
             title="Switch Counter"
-            target={<SwitchCounters />}
+            target={<SwitchCounter />}
             shortcut={{ modifiers: ["cmd"], key: "s" }}
           />
           <Action.Push
